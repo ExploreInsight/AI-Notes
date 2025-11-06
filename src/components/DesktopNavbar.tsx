@@ -10,11 +10,6 @@ async function DesktopNavbar() {
     const user = await currentUser();
     return (
         <div className='hidden md:flex items-center space-x-4'>
-            <Button variant='ghost'
-                size='icon'
-                className="mr-2">
-                <SearchIcon className='h-[1.2rem] w-[1.2rem' />
-            </Button>
             <ToggleMode />
 
             <Button variant='ghost' className='flex items-center gap-2' asChild>

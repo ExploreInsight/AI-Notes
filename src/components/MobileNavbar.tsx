@@ -15,11 +15,6 @@ const MobileNavbar = () => {
 
   return (
     <div className='flex md:hidden items-center space-x-2'>
-      <Button  variant='ghost'
-        size='icon'
-        className="mr-2">
-            <SearchIcon className='h-[1.2rem] w-[1.2rem' />
-      </Button>
       {/* Theme Toggle */}
       <Button
         variant='ghost'

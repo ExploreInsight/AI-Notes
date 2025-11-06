@@ -1,2 +1,8 @@
-// pages/index.jsx
-export default function Home(){ return <div>hi — home</div> }
+'use client'
+import NotesPage from "@/components/NotesUI"
+
+export default async function Home(){
+  return (
+    <NotesPage />
+  )
+}
