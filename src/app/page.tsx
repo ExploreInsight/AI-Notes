@@ -1,9 +1,2 @@
-
-
-export default function Home() {
-  return (
-    <div>
-      AI Noes Home Page
-    </div>
-  )
-}
+// pages/index.jsx
+export default function Home(){ return <div>hi — home</div> }

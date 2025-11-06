@@ -3,17 +3,15 @@
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  // output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
+  // Remove the output line completely, or use default node_modules location
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
 
 model User {
   id        String  @id @default(cuid())
@@ -25,14 +23,17 @@ model User {
 
   notes Note[]
 }
-
 model Note {
   id        String   @id @default(cuid())
   authorId  String
   title     String
-  content   String
+  content   String   @db.Text // Text for longer content
+  summary   String?  @db.Text // For AI summary
+  tags      String[] @default([]) // For AI-generated tags
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId]) // Speed up queries by user
 }
