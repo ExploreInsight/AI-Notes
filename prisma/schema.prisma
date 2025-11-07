@@ -28,7 +28,7 @@ model Note {
   authorId  String
   title     String
   content   String   @db.Text // Text for longer content
-  summary   String?  @db.Text // For AI summary
+  summary   String? @db.Text // For AI summary
   tags      String[] @default([]) // For AI-generated tags
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

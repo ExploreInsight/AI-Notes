@@ -1,100 +1,71 @@
 // src/components/AiButtons.tsx
 "use client";
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import {Sparkles as  IconSparkles,Tag as IconTag, Loader2 as IconLoader2 } from "lucide-react";
+import { Sparkles as IconSparkles,Tag as IconTag, Loader2 as IconLoader2 } from "lucide-react";
+import { generateSummary, generateTags } from "@/lib/ai-client"; // your axios helpers
 
-type AiButtonsProps = {
-  /** current note title (optional) to provide context to the AI */
-  title?: string;
-  /** current note content to provide context to the AI (optional) */
-  content?: string;
-  /** called when user asks to summarize. should return string | undefined (summary) */
-  onSummarize: (args: { title?: string; content?: string }) => Promise<string | undefined>;
-  /** called when user asks to generate tags. should return array of tags or comma-separated string */
-  onGenerateTags: (args: { title?: string; content?: string }) => Promise<string[] | string | undefined>;
+type Props = {
+  noteId: string;
+  onApplySummary?: (summary: string) => void; // parent decides what to do (apply to content/summary or call update)
+  onApplyTags?: (tags: string[]) => void;
   disabled?: boolean;
-  className?: string;
 };
 
-export default function AiButtons({
-  title,
-  content,
-  onSummarize,
-  onGenerateTags,
-  disabled = false,
-  className = "",
-}: AiButtonsProps) {
-  const [loadingSumm, setLoadingSumm] = useState(false);
+export default function AiButtons({ noteId, onApplySummary, onApplyTags, disabled = false }: Props) {
+  const [loadingSummary, setLoadingSummary] = useState(false);
   const [loadingTags, setLoadingTags] = useState(false);
 
-  async function handleSummarize() {
-    if (disabled || loadingSumm) return;
+  async function handleSummary() {
+    if (disabled || loadingSummary) return;
+    setLoadingSummary(true);
     try {
-      setLoadingSumm(true);
-      await onSummarize({ title, content });
+      const res = await generateSummary(noteId);
+      if (res.success) {
+        onApplySummary?.(res.summary);
+      } else {
+        // show error - replace with your toast
+        console.error("Summary error", res.error);
+        alert(res.error || "Failed to generate summary");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Unexpected error generating summary");
     } finally {
-      setLoadingSumm(false);
+      setLoadingSummary(false);
     }
   }
 
   async function handleTags() {
     if (disabled || loadingTags) return;
+    setLoadingTags(true);
     try {
-      setLoadingTags(true);
-      await onGenerateTags({ title, content });
+      const res = await generateTags(noteId);
+      if (res.success) {
+        onApplyTags?.(res.tags);
+      } else {
+        console.error("Tags error", res.error);
+        alert(res.error || "Failed to generate tags");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Unexpected error generating tags");
     } finally {
       setLoadingTags(false);
     }
   }
 
   return (
-    <div className={`flex flex-wrap gap-2 items-center ${className}`}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleSummarize}
-            disabled={disabled || loadingSumm}
-            aria-label="AI Summarize"
-          >
-            {loadingSumm ? (
-              <IconLoader2 className="animate-spin mr-2 h-4 w-4" />
-            ) : (
-              <IconSparkles className="mr-2 h-4 w-4" />
-            )}
-            <span className="hidden xs:inline">AI Summarize</span>
-            <span className="xs:hidden">Summarize</span>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="top">
-          Auto-generate a short summary from note content.
-        </TooltipContent>
-      </Tooltip>
+    <div className="flex gap-2">
+      <Button size="sm" variant="outline" onClick={handleSummary} disabled={disabled || loadingSummary}>
+        {loadingSummary ? <IconLoader2 className="animate-spin mr-2 h-4 w-4" /> : <IconSparkles className="mr-2 h-4 w-4" />}
+        AI Summarize
+      </Button>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleTags}
-            disabled={disabled || loadingTags}
-            aria-label="AI Tags"
-          >
-            {loadingTags ? (
-              <IconLoader2 className="animate-spin mr-2 h-4 w-4" />
-            ) : (
-              <IconTag className="mr-2 h-4 w-4" />
-            )}
-            <span className="hidden xs:inline">AI Tags</span>
-            <span className="xs:hidden">Tags</span>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="top">Generate tag suggestions (comma separated).</TooltipContent>
-      </Tooltip>
+      <Button size="sm" variant="outline" onClick={handleTags} disabled={disabled || loadingTags}>
+        {loadingTags ? <IconLoader2 className="animate-spin mr-2 h-4 w-4" /> : <IconTag className="mr-2 h-4 w-4" />}
+        AI Tags
+      </Button>
     </div>
   );
 }

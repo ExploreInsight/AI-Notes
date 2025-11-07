@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -6,57 +6,112 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import AiButtons from "./AiButtons";
 
+type Props = {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onSave: (data: { title: string; content: string }) => Promise<any>;
+  initial?: {
+    id?: string;
+    title?: string;
+    content?: string;
+    summary?: string | null;
+    tags?: string[] | null;
+  } | null;
+};
 
-export default function NoteEditorModal({ open, onOpenChange, onSave, initial }: { open: boolean; onOpenChange: (v: boolean) => void; onSave: (data: { title: string; content: string }) => Promise<any>; initial?: any | null }) {
-    const [title, setTitle] = useState(initial?.title || "");
-    const [content, setContent] = useState(initial?.content || "");
+export default function NoteEditorModal({ open, onOpenChange, onSave, initial }: Props) {
+  const [title, setTitle] = useState(initial?.title || "");
+  const [content, setContent] = useState(initial?.content || "");
+  const [summary, setSummary] = useState<string | null>(initial?.summary ?? null);
+  const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
+  const [loading, setLoading] = useState(false);
 
-    const [tags, setTags] = useState<string[] | null>(initial?.tags ?? null);
-    useEffect(() => { setTitle(initial?.title || ""); setContent(initial?.content || ""); }, [initial]);
+  useEffect(() => {
+    setTitle(initial?.title || "");
+    setContent(initial?.content || "");
+    setSummary(initial?.summary ?? null);
+    setTags(initial?.tags ?? []);
+  }, [initial]);
 
-
-    const [loading, setLoading] = useState(false);
-
-  async function callAiSummary({ title, content }: { title?: string; content?: string; }) {
-    
-    const fake = "Short summary — " + (content?.slice(0, 120) || title || "no content");
-    // setContent((c) => `${fake}\n\n${c}`);
-    return fake;
-  }
-
-  async function callAiTags({ title, content }: { title?: string; content?: string; }) {
-    // Call your tags AI endpoint; return array or comma string
-    const fakeTags = ["ai", "notes", "summary"];
-    setTags(fakeTags);
-    return fakeTags;
-  }
-    async function save() {
-        setLoading(true);
-        try { await onSave({ title, content }); } finally { setLoading(false); }
+  async function save() {
+    setLoading(true);
+    try {
+      await onSave({ title, content });
+    } finally {
+      setLoading(false);
     }
+  }
 
+  // called by AiButtons when AI returns a summary
+  function handleApplySummary(s: string) {
+    setSummary(s);
+    // optional: you may show a toast here or persist via updateNote if desired
+  }
 
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{initial ? "Edit note" : "New note"}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                    <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" />
-                    <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Write your note..." className="min-h-[200px]" />
-                    <div className="flex justify-end gap-2">
-                        <AiButtons
-                            title={title}
-                            content={content}
-                            onSummarize={callAiSummary}
-                            onGenerateTags={callAiTags}
-                        />
-                        <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-                        <Button onClick={save} disabled={loading}>{loading ? 'Saving...' : 'Save'}</Button>
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
+  // called by AiButtons when AI returns tags array
+  function handleApplyTags(t: string[]) {
+    setTags(t);
+    // optional: persist or show toast
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{initial ? "Edit note" : "New note"}</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" />
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Write your note..."
+            className="min-h-[200px]"
+          />
+
+          {/* AI buttons -> pass noteId and callbacks */}
+          <div className="flex items-center justify-between gap-2">
+            <AiButtons
+              noteId={initial?.id ?? ""}
+              onApplySummary={handleApplySummary}
+              onApplyTags={handleApplyTags}
+              disabled={!initial?.id} // disable if note not yet created (no id)
+            />
+
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button onClick={save} disabled={loading}>
+                {loading ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </div>
+
+          {/* show generated summary (if any) */}
+          {summary ? (
+            <div className="rounded-md border p-3 bg-muted/50">
+              <h4 className="font-medium mb-1">AI Summary</h4>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{summary}</p>
+            </div>
+          ) : null}
+
+          {/* show tags as chips */}
+          {tags && tags.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {tags.map((t) => (
+                <span
+                  key={t}
+                  className="text-xs px-2 py-1 rounded-full border bg-background/60"
+                >
+                  #{t}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }

@@ -37,7 +37,7 @@ export async function getNotes() {
 }
 
 // Get single note
-export async function getNote(noteId: string) {
+export async function getNote(noteId: string, id: string) {
   try {
     const { userId } = await auth()
     
@@ -92,13 +92,15 @@ export async function createNote(data: z.infer<typeof createNoteSchema>) {
       return { error: 'User not found' }
     }
 
-    const note = await prisma.note.create({
+      const note = await prisma.note.create({
       data: {
         title: validated.title,
         content: validated.content,
         authorId: user.id,
+        summary: '',
+        tags:[],    
       },
-    })
+    });
 
     revalidatePath('/')
     return { note }
