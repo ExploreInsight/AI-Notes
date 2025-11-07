@@ -1,36 +1,156 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🧠 AI Notes — Smart Note Assistant
 
-## Getting Started
+**AI Notes** is a full-stack Next.js application that helps users create, organize, and summarize notes intelligently.  
+It uses **Google Gemini AI** to generate summaries and tags, and **Clerk** for authentication — built with **Hono**, **Prisma**, and a modern **React + Tailwind** UI.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🚀 Features
+
+- 🔐 **User Authentication** — powered by [Clerk](https://clerk.com/)
+- 🗒️ **Create, Edit & Delete Notes** — manage your personal notes securely
+- 🤖 **AI Summarization** — Gemini summarizes notes in 2–3 sentences
+- 🏷️ **AI Tag Generation** — Gemini generates 3–5 relevant tags for each note
+- 🔍 **Search Functionality**
+  - Searches only when pressing **Enter** or clicking the **search icon**
+  - Clean, responsive design
+- ⚡ **Tech Stack**
+  - **Next.js 16 (App Router)**
+  - **Hono** for API routing
+  - **Prisma ORM + PostgreSQL**
+  - **Google Gemini AI (via @google/genai SDK)**
+  - **Tailwind CSS + ShadCN UI**
+  - **Clerk Auth**
+
+---
+
+## 🧩 Project Structure
+
+```shell
+app/
+├── api/
+│ └── ai/
+│ └── [[...route]]/
+│ └── route.ts # Hono + Gemini AI endpoints
+components/
+│ ├── AiButtons.tsx # Buttons for AI summary & tags
+│ └── Header.tsx # Search + Create note header
+lib/
+│ ├── ai-client.ts # Axios client for AI routes
+│ └── prisma.ts # Prisma client instance
+actions/
+│ └── notes.action.ts # getNote, CRUD actions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ⚙️ Setup Instructions
 
-## Learn More
+### 1️⃣ Clone & Install
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+git clone https://github.com/yourusername/ai-notes.git
+cd ai-notes
+pnpm install
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2️⃣ Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Create a .env.local file in the root:
 
-## Deploy on Vercel
+```bash
+# Clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Database
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DB_NAME"
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Google Gemini AI
+GOOGLE_GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-pro
+```
+
+---
+
+### 3️⃣ Prisma Setup
+
+```bash
+npx prisma generate
+npx prisma db push
+
+```
+---
+### 4️⃣ Run the Dev Server
+
+```bash
+pnpm dev
+# or
+npm run dev
+
+Your app will be live at http://localhost:3000
+```
+---
+
+###  AI Integration Details
+
+The AI endpoints are handled with Hono inside
+app/api/ai/[[...route]]/route.ts.
+
+Endpoints:
+```shell
+Route	Method	Description
+/api/ai/summary	POST	Generate AI summary
+/api/ai/tags	POST	Generate AI tags
+/api/ai/health	GET	Check API health status
+```
+Example Request:
+
+```bash
+POST /api/ai/summary
+{
+  "noteId": "clxyz12345"
+}
+
+```
+
+Response:
+```bash
+{
+  "success": true,
+  "summary": "This note explains how AI helps summarize content efficiently."
+}
+```
+---
+
+### 🧪 Commands Reference
+
+Command	Description
+```bash
+pnpm dev	Start development server
+pnpm build	Build for production
+pnpm start	Run production build
+npx prisma studio	Visualize database
+```
+---
+### 💡 Future Improvements
+```bash
+✅ Add toasts instead of browser alerts for better UX
+
+✅ Add debounce-based search (optional)
+
+🔄 Add note rewriting and translation using Gemini
+
+💾 Implement caching and rate limiting for API calls
+
+🌍 Add export/import notes functionality
+```
+---
+
+### 📜 License
+
+License © 2025 Chirag
+
+Made with ❤️ by Chirag — powered by Gemini AI + Next.js + Hono
