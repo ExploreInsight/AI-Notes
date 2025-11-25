@@ -101,8 +101,7 @@ export async function createNote(data: z.infer<typeof createNoteSchema>) {
         tags:[],    
       },
     });
-
-    revalidatePath('/')
+   revalidatePath('/')
     return { note }
   } catch (error) {
     if (error instanceof z.ZodError) {
